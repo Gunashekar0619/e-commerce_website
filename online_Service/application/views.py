@@ -1,3 +1,4 @@
+import json
 from rest_framework.views import APIView
 from .models import Goods, Ratings, UserProfile
 from .serializers import UserSerializers, GoodsSerializers, RatingsSerializers, ProfileSerializers
@@ -16,10 +17,52 @@ from rest_framework.authtoken.views import ObtainAuthToken
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     serializer_class = ProfileSerializers
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+
+    @action(detail=False, methods=['GET'])
+    def getusers(self,*args,**kwargs):
+        print("egt")
+        arra = []
+        goods = UserProfile.objects.all()
+        for good in goods:
+            array = {}
+            array["profile_id"] = good.id
+            array["user_id"] = good.user_id.id
+            array["name"] = good.user_id.username
+            array["email"] = good.user_id.email
+            array["type"] = good.type
+            array["address"] = good.address
+            array["city"] = good.city
+            array["country"] = good.country
+            array["phone_no"] = good.phone_no
+            array["gender"] = good.gender
+            array["sold"] = good.sold
+            array["amount_received"] = good.amount_received
+            # print(array)
+            arra.append(array)
+        # seliazers = ProfileSerializers(arra, many=False)
+        response = {'message': 'success', 'result': arra}
+        return Response(response, status=status.HTTP_200_OK)
+
+
+    @action(detail=False,methods=['POST'])
+    def seller(self, request):
+        if 'user_id' and 'sold' and 'amount_received' in request.data:
+            user_id=request.data['user_id']
+            currentuser = self.queryset.get(user_id=user_id)
+            currentuser.sold= request.data['sold']
+            currentuser.amount_received= request.data['amount_received']
+            currentuser.save()
+            serializer = ProfileSerializers(currentuser,many=False)
+            response = {'message':'success','result':serializer.data}
+            return Response(response,status=status.HTTP_200_OK)
+        else:
+            return Response({'Message': 'failed'}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, pk=None):
+        # user_id = request.data['user_id']
+        # print('user_id')
+        # user = User.objects.filter(id=user_id)
+
         try:
             currentuser = self.queryset.get(user_id=pk)
             currentuser.phone_no= request.data['phone_no']
@@ -27,12 +70,14 @@ class ProfileViewSet(viewsets.ModelViewSet):
             currentuser.city = request.data['city']
             currentuser.country = request.data['country']
             currentuser.gender = request.data['gender']
+
+            # currentuser.name = user.username
             currentuser.save()
             serializer = ProfileSerializers(currentuser, many=False)
             response = {'message': 'Profile update', 'result': serializer.data}
             return Response(response, status=status.HTTP_200_OK)
         except:
-            response = {'message': 'failed'}
+            response = {'message': 'update error'}
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -67,6 +112,7 @@ class Userdetails(APIView):
                 user = UserProfile.objects.get(user_id=userid)
                 response = {'status': ' fetch success', 'data': {
                     'profile_id': user.id,
+                    'user_id':userid,
                     'phone_no': user.phone_no,
                     'type': user.type,
                     'address': user.address,
@@ -104,8 +150,72 @@ class CustomAuthToken(ObtainAuthToken):
 class GoodsViewSet(viewsets.ModelViewSet):
     queryset = Goods.objects.all()
     serializer_class = GoodsSerializers
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+
+    def get(self,*args,**kwargs):
+        print("egt")
+        arra = []
+        goods = GoodsViewSet.objects.all()
+        for good in goods:
+            array = {}
+            array["goods_id"] = good.id
+            array["owner"] = good.user_id.id
+            array["location"] = good.location
+            array["name"] = good.name
+            array["type"] = good.type
+            array["price"] = good.price
+            array["comments"] = good.comments
+            array["stock"] = good.stock
+            array["no_of_ratings"] = good.no_of_ratings
+            array["avg_ratings"] = good.avg_ratings
+            # print(array)
+            arra.append(array)
+        # seliazers = ProfileSerializers(arra, many=False)
+        response = {'message': 'success', 'result': arra}
+        return Response(response, status=status.HTTP_200_OK)
+
+    # def put(self,request):
+    #     if 'id' and 'owner' in request.data:
+    #         product = Goods.objects.get(id=id)
+    #         product.name = request.data['name']
+    #         product.type = request.data['type']
+    #         product.stock = request.data['stock']
+    #         product.price = request.data['price']
+    #         product.save()
+    #         serializer= GoodsSerializers(product,many=False)
+    #         response = {"message" : "Product details updated", "data": serializer.data}
+    #         return Response(response, status=status.HTTP_200_OK)
+    #     else:
+    #         return Response({"message":"unsuccessful"},status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['POST'])
+    def usergoods(self, request):
+        if 'user_id' in request.data:
+            user_id = request.data['user_id']
+            print(user_id)
+            list = Goods.objects.filter(owner_id=user_id)
+            #print(list)
+            goods=[]
+            for i in list:
+                goods.append(i.id)
+            print(goods)
+            return Response({'goods_id': goods}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'input user_id'},status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['GET'])
+    def duplicate(self, request):
+        #Count = 0
+        if 'name' in request.GET:
+            name = request.GET.get('name', '')
+            #print(name)
+            dupes = Goods.objects.filter(name=name)
+            a = len(dupes)
+            owner = {}
+            for i in dupes:
+                owner.update({i.id: {'owerid': i.owner.id, 'name': i.owner.username}})
+            return Response({'data': owner, 'count': a}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'give input for duplicate data'})
 
     @action(detail=True, methods=['POST'])
     def rate_goods(self, request, pk=None):
@@ -126,7 +236,6 @@ class GoodsViewSet(viewsets.ModelViewSet):
                 serializer = RatingsSerializers(rating, many=False)
                 response = {'message': 'Rating Created', 'result': serializer.data}
                 return Response(response, status=status.HTTP_200_OK)
-
         else:
             response = {'message': 'its not working'}
             return Response(response, status.HTTP_200_OK)

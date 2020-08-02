@@ -29,10 +29,11 @@ class UserSerializers(serializers.ModelSerializer):
 class GoodsSerializers(serializers.ModelSerializer):
     class Meta:
         model = Goods
-        fields = ('id','owner', 'name', 'type', 'price', 'comments', 'no_of_ratings', 'avg_ratings')
+        fields = ('id','owner', 'name', 'type', 'price', 'comments', 'stock','location', 'no_of_ratings', 'avg_ratings')
         extra_kwargs = {'name': {'required': True},
                         'type': {'required': True},
                         'price': {'required': True},
+                        'stock': {'required': True}
                         }
 
 

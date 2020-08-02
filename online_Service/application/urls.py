@@ -10,7 +10,7 @@ router.register('Goods',GoodsViewSet)
 router.register('Ratings',RatingsViewSet)
 router.register('user',UserViewSet)
 router.register('profile',ProfileViewSet)
-#router.register('userdetails',Userdetails)
+#router.register('usergoods',citygoods)
 
 
 
