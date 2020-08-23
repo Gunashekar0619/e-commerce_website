@@ -1,29 +1,20 @@
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.contrib import auth
-
-class User(auth.models.User,auth.models.PermissionsMixin):
-
-    def __str__(self):
-        return self.id
+from datetime import date, datetime
 
 
 class UserProfile(models.Model):
-    user_id = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    user_id = models.OneToOneField(User, on_delete=models.CASCADE)
     type = models.CharField(max_length=20, blank=False)
     phone_no = models.IntegerField()
     address = models.CharField(max_length=255, blank=True)
+    state = models.CharField(max_length=100,blank=True)
     country = models.CharField(max_length=50, blank=True)
     city = models.CharField(max_length=50, blank=True)
     gender = models.CharField (max_length=10,blank=True)
     sold = models.IntegerField(default=0)
     amount_received = models.IntegerField(default=0)
-
-
-
-    # name = models.CharField(max_length=20,blank=True)
-
 
 
 class Goods(models.Model):
@@ -51,10 +42,6 @@ class Goods(models.Model):
         else:
             return 0
 
-    # class Meta:
-    #     unique_together = (('name', 'owner'),)
-    #     index_together = (('name', 'owner'),)
-
 
 class Ratings(models.Model):
     good = models.ForeignKey(Goods, on_delete=models.CASCADE)
@@ -64,3 +51,28 @@ class Ratings(models.Model):
     class Meta:
         unique_together = (('user', 'good'),)
         index_together = (('user', 'good'),)
+
+
+class CreditCards(models.Model):
+    Owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    cardNumber = models.IntegerField()
+    cardName = models.CharField(max_length=100)
+    expiry = models.IntegerField()
+    cvc = models.IntegerField()
+
+
+class Ordered(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    cardNumber = models.IntegerField()
+    date = models.DateField(default=date.today)
+    time = models.TimeField(default=datetime.now().strftime("%H:%M:%S"))
+    Goods = models.CharField(max_length=100)
+    price = models.IntegerField()
+    shipmentAddress = models.CharField(max_length=500)
+    phone_no = models.IntegerField(default=0)
+    sellerId = models.IntegerField(default=0)
+    seller = models.CharField(max_length=100)
+    transationid = models.IntegerField()
+    success = models.BooleanField(default=False)
+    quantity = models.IntegerField(default=0)
+    total = models.IntegerField(default=0)

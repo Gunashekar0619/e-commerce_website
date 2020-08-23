@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Goods, Ratings, UserProfile
+from .models import Goods, Ratings, UserProfile, CreditCards, Ordered
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 
@@ -42,3 +42,23 @@ class RatingsSerializers(serializers.ModelSerializer):
         model = Ratings
         fields = ('id', 'stars', 'user', 'good')
         extra_kwargs = {'stars': {'required': True}}
+
+
+class CreditSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = CreditCards
+        fields = '__all__'
+        extra_kwargs = {'Owner': {'required': True},
+                        'cardNumber': {'required': True},
+                        }
+
+
+class OrderedSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Ordered
+        fields = '__all__'
+        extra_kwargs = {'user': {'required': True},
+                        'cardNumber': {'required': True},
+                        'Goods': {'required': True},
+                        'seller': {'required': True}
+                        }

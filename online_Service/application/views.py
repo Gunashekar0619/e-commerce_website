@@ -1,7 +1,7 @@
 import json
 from rest_framework.views import APIView
-from .models import Goods, Ratings, UserProfile
-from .serializers import UserSerializers, GoodsSerializers, RatingsSerializers, ProfileSerializers
+from .models import Goods, Ratings, UserProfile, Ordered, CreditCards
+from .serializers import UserSerializers, GoodsSerializers, RatingsSerializers, ProfileSerializers ,OrderedSerializers ,CreditSerializers
 from django.contrib.auth.models import User
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -109,7 +109,9 @@ class Userdetails(APIView):
         if 'user_id' in request.data:
             userid = request.data['user_id']
             try:
+                print(UserProfile.objects.get(user_id=userid))
                 user = UserProfile.objects.get(user_id=userid)
+                print(user)
                 response = {'status': ' fetch success', 'data': {
                     'profile_id': user.id,
                     'user_id':userid,
@@ -120,6 +122,7 @@ class Userdetails(APIView):
                     'country':user.country,
                     'gender':user.gender
                 }}
+                print(response)
                 return Response(response, status=status.HTTP_200_OK)
             except:
                 response = {'status': 'failure', 'message': 'enter valid user id'}
@@ -254,3 +257,113 @@ class RatingsViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         response = {'message': 'Rating cannot be created like that'}
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+class CreditViewSet(viewsets.ModelViewSet):
+    queryset = CreditCards.objects.all()
+    serializer_class = CreditSerializers
+
+    @action(detail=False, methods=['POST'])
+    def sad(self,request):
+        try:
+            user_id = request.data['user_id']
+            details = CreditCards.objects.filter(Owner = user_id)
+            list=[]
+            for i in details:
+                object = {}
+                object['id'] = i.id
+                object['Owner'] = i.Owner.username
+                object['CardNumber'] = i.cardNumber
+                object['CardName'] = i.cardName
+                object['expiry'] = i.expiry
+                object['cvc'] = i.cvc
+                list.append(object)
+            response = {'message': 'Credit card Fetch success','data':list}
+            return Response(response, status=status.HTTP_200_OK)
+        except:
+            response ={'message' : 'User id required'}
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrderedViewSet(viewsets.ModelViewSet):
+    queryset = Ordered.objects.all()
+    serializer_class = OrderedSerializers
+
+    @action(detail=False, methods=['GET'])
+    def getdata(self,*args,**kwargs):
+        print("came")
+        try:
+
+            transaction = Ordered.objects.all()
+            tempArray = []
+            for t in transaction:
+                try:
+                    splitAddress = t.shipmentAddress.split(",")
+                    address = splitAddress[0]
+                    city = splitAddress[1]
+                    country = splitAddress[2]
+                except:
+                    city = " "
+                    country = "India"
+                    address = " "
+                tempObject = {}
+                tempObject['id'] = t.id
+                tempObject['Goods'] = t.Goods
+                tempObject['user'] = {"user_id":t.user.id,
+                                      "username":t.user.username,
+                                      "userEmail":t.user.email}
+                tempObject['cardNumber'] = t.cardNumber
+                tempObject['date'] = t.date
+                tempObject['time'] = t.time
+                tempObject['price'] = t.price
+                tempObject['shipmentAddress'] = {
+                    "address" : address,
+                    "city" : city,
+                    "country" : country
+                }
+                tempObject['phone_no'] = t.phone_no
+                tempObject['seller'] = t.seller
+                tempObject['sellerId'] = t.sellerId
+                tempObject['transationid'] = t.transationid
+                tempObject['success'] = t.success
+                tempObject['quantity'] = t.quantity
+                tempObject['total'] = t.total
+                tempArray.append(tempObject)
+            response = {'message': 'Fetch Success ', 'data': tempArray}
+            return Response(response, status=status.HTTP_200_OK)
+        except Exception as e:
+            response = {'message': e}
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'])
+    def postdata(self,request):
+        seller = User.objects.all()
+        sellerName = " "
+        for user in seller:
+            if user.id == request.data['user']:
+                userIns = user
+        for user in seller:
+            if user.id == request.data['seller']:
+                sellerName = user.username
+        try:
+            order = Ordered.objects.create(Goods=request.data['Goods'],
+                                   user=userIns,
+                                   cardNumber=request.data['cardNumber'],
+                                   date=request.data['date'],
+                                   time=request.data['time'],
+                                   price=request.data['price'],
+                                   shipmentAddress=request.data['shipmentAddress'],
+                                   seller=sellerName,
+                                   sellerId=request.data['seller'],
+                                   transationid=request.data['transationid'],
+                                   success=request.data['success'],
+                                   quantity=request.data['quantity'],
+                                   total=request.data['total'])
+            serializer = OrderedSerializers(order, many=False)
+            response = {'status': ' added success', 'data': serializer.data}
+            return Response(response, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            response = {'message': e}
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+

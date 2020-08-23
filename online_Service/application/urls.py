@@ -1,4 +1,4 @@
-from .views import GoodsViewSet, RatingsViewSet, UserViewSet, ProfileViewSet, CustomAuthToken, Userdetails
+from .views import GoodsViewSet, RatingsViewSet, UserViewSet, ProfileViewSet, CustomAuthToken, Userdetails, CreditViewSet, OrderedViewSet
 from django.urls import path
 from rest_framework import routers
 from django.conf.urls import include
@@ -11,7 +11,8 @@ router.register('Ratings',RatingsViewSet)
 router.register('user',UserViewSet)
 router.register('profile',ProfileViewSet)
 #router.register('usergoods',citygoods)
-
+router.register('ordered',OrderedViewSet)
+router.register('creditcards',CreditViewSet)
 
 
 urlpatterns = [
