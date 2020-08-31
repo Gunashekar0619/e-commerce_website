@@ -10,7 +10,8 @@ class ProfileSerializers(serializers.ModelSerializer):
         model = UserProfile
         fields = '__all__'
         extra_kwargs = {'type': {'required': True},
-                        'phone_no': {'required': True}
+                        'phone_no': {'required': True},
+                        'pincode':{'required':True}
                         }
 
 
@@ -29,7 +30,7 @@ class UserSerializers(serializers.ModelSerializer):
 class GoodsSerializers(serializers.ModelSerializer):
     class Meta:
         model = Goods
-        fields = ('id','owner', 'name', 'type', 'price', 'comments', 'stock','location', 'no_of_ratings', 'avg_ratings')
+        fields = ('id','owner', 'name', 'type', 'price', 'comments', 'stock','location','pincode', 'no_of_ratings', 'avg_ratings')
         extra_kwargs = {'name': {'required': True},
                         'type': {'required': True},
                         'price': {'required': True},

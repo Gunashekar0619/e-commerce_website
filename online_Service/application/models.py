@@ -15,6 +15,7 @@ class UserProfile(models.Model):
     gender = models.CharField (max_length=10,blank=True)
     sold = models.IntegerField(default=0)
     amount_received = models.IntegerField(default=0)
+    pincode = models.IntegerField(default=0)
 
 
 class Goods(models.Model):
@@ -25,6 +26,7 @@ class Goods(models.Model):
     comments = models.CharField(max_length=100, blank=True)
     stock = models.IntegerField()
     location = models.CharField(max_length=200,default="")
+    pincode = models.IntegerField(default=0)
 
     def no_of_ratings(self):
         rating = Ratings.objects.filter(good=self)

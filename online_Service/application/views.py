@@ -30,6 +30,8 @@ class ProfileViewSet(viewsets.ModelViewSet):
             array["name"] = good.user_id.username
             array["email"] = good.user_id.email
             array["type"] = good.type
+            array['state'] = good.state
+            array['pincode'] = good.pincode
             array["address"] = good.address
             array["city"] = good.city
             array["country"] = good.country
@@ -70,7 +72,8 @@ class ProfileViewSet(viewsets.ModelViewSet):
             currentuser.city = request.data['city']
             currentuser.country = request.data['country']
             currentuser.gender = request.data['gender']
-
+            currentuser.state = request.data['state']
+            currentuser.pincode = request.data['pincode']
             # currentuser.name = user.username
             currentuser.save()
             serializer = ProfileSerializers(currentuser, many=False)
@@ -114,13 +117,15 @@ class Userdetails(APIView):
                 print(user)
                 response = {'status': ' fetch success', 'data': {
                     'profile_id': user.id,
-                    'user_id':userid,
+                    'user_id': userid,
                     'phone_no': user.phone_no,
                     'type': user.type,
                     'address': user.address,
                     'city': user.city,
-                    'country':user.country,
-                    'gender':user.gender
+                    'state': user.state,
+                    'pincode': user.pincode,
+                    'country': user.country,
+                    'gender': user.gender
                 }}
                 print(response)
                 return Response(response, status=status.HTTP_200_OK)
@@ -154,18 +159,19 @@ class GoodsViewSet(viewsets.ModelViewSet):
     queryset = Goods.objects.all()
     serializer_class = GoodsSerializers
 
-    def get(self,*args,**kwargs):
-        print("egt")
+    def GET(self,*args,**kwargs):
+        # print("egt")
         arra = []
         goods = GoodsViewSet.objects.all()
         for good in goods:
             array = {}
             array["goods_id"] = good.id
-            array["owner"] = good.user_id.id
+            array["owner"] = good.user_id.username
             array["location"] = good.location
             array["name"] = good.name
             array["type"] = good.type
             array["price"] = good.price
+            array["pincode"] = good.pincode
             array["comments"] = good.comments
             array["stock"] = good.stock
             array["no_of_ratings"] = good.no_of_ratings
@@ -292,7 +298,6 @@ class OrderedViewSet(viewsets.ModelViewSet):
     def getdata(self,*args,**kwargs):
         print("came")
         try:
-
             transaction = Ordered.objects.all()
             tempArray = []
             for t in transaction:
